@@ -1,49 +1,122 @@
-body {
-  font-family: "Hind", sans-serif;
-  font-weight: 300;
-  text-align: center;
-  background-image: radial-gradient(#4286f4, #162f56);
-}
+const calculator = document.querySelector(".calculator");
+const keys = document.querySelector(".calculator_keys");
+const display = document.querySelector(".calculator_display");
+// event listener
+keys.addEventListener("click", e => {
+  if (e.target.matches("button")) {
+    const key = e.target;
+    const action = key.dataset.action;
+    const keyContent = key.textContent;
+    const displayedNum = display.textContent;
+    const previousKeyType = calculator.dataset.previousKeyType;
+    if (!action) {
+      // 0 button
+      if (
+        displayedNum === "0" ||
+        previousKeyType === "operator" ||
+        previousKeyType === "calculate"
+      ) {
+        display.textContent = keyContent;
+      } else {
+        display.textContent = displayedNum + keyContent;
+      }
+      calculator.dataset.previousKeyType = "number";
+    }
+    // decimal button
+    if (action === "decimal") {
+      if (!displayedNum.includes(".")) {
+        display.textContent = displayedNum + ".";
+      } else if (
+        previousKeyType === "operator" ||
+        previousKeyType === "calculate"
+      ) {
+        display.textContent = "0.";
+      }
 
-h1 {
-  color: #dee5ef;
-  text-shadow: 1px 1px;
-}
+      display.textContent = displayedNum + ".";
+      calculator.dataset.previousKeyType = "decimal";
+    }
+    // operators
+    if (
+      action === "add" ||
+      action === "subtract" ||
+      action === "multiply" ||
+      action === "divide"
+    ) {
+      console.log("it's an operator");
+      calculator.dataset.firstValue = displayedNum;
+      calculator.dataset.operator = action;
+      calculator.dataset.previousKeyType = "operator";
+    }
 
-.calculator {
-  width: 100%;
-  /*   border: 1px solid black;
-  border-radius: 4%; */
-  padding: 40px;
-}
+    // calculate
+    if (action === "calculate") {
+      let firstValue = calculator.dataset.firstValue;
+      const operator = calculator.dataset.operator;
+      const secondValue = displayedNum;
 
-.calculator_keys {
-  display: flex;
-  flex-wrap: no-wrap;
-  flex-direction: rows;
-  justify-content: center;
-}
+      calculator.dataset.modValue = secondValue;
 
-.calculator_display {
-  font-size: 3rem;
-}
+      const calculate = (n1, operator, n2) => {
+        let result = "";
 
-button {
-  border-radius: 10%;
-  background-color: #dee5ef;
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 1.5rem;
-  display: flex;
-  margin: 5px;
-  height: 50px;
-  width: 50px;
-}
+        if (operator === "add") {
+          result = parseFloat(n1) + parseFloat(n2);
+        } else if (operator === "subtract") {
+          result = parseFloat(n1) - parsefloat(n2);
+        } else if (operator === "multiply") {
+          result = parseFloat(n1) * parseFloat(n2);
+        } else if (operator === "divide") {
+          result = parseFloat(n1) / parseFloat(n2);
+        }
+        return result;
+      };
 
-.equals {
-  height: 10.5rem;
-}
+      if (
+        firstValue &&
+        operator &&
+        previousKeyType !== "operator" &&
+        previousKeyType !== "calculate"
+      ) {
+        const calcValue = calculate(firstValue, operator, secondValue);
+        display.textContent = calcValue;
+        calculator.dataset.firstValue = calcValue;
+      } else {
+        calculator.dataset = displayedNum;
+      }
 
-.is_depressed {
-  transform: scale(1.1);
-}
+      if (firstValue) {
+        if (previousKeyType === "calculate") {
+          firstValue = displayedNum;
+          secondValue = calculator.dataset.modValue;
+        }
+        display.textContent = calculate(firstValue, operator, secondValue);
+      }
+      calculator.dataset.modValue = secondValue;
+      calculator.dataset.previousKeyType = "calculate";
+
+      calculator.dataset.firstValue = calcValue;
+    } else {
+      calculator.dataset.firstValue = displayedNum;
+    }
+  }
+
+  // clear
+  if (action === "clear") {
+    if (key.textContent === "AC") {
+      calculator.dataset.firstValue = "";
+      calculator.dataset.modValue = "";
+      calculator.dataset.operator = "";
+      calculator.dataset.previousKeyType = "";
+    } else {
+      display.textContent = "0";
+      key.textContent = "AC";
+      calculate.dataset.previousKeyType = "clear";
+    }
+  }
+  if (action !== "clear") {
+    const clearButton = calculator.querySelector("[data-action=clear]");
+    clearButton.textContent = "CE";
+  }
+});
+
